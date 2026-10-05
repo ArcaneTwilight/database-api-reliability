@@ -72,7 +72,10 @@ export async function GET() {
 
   const latency = Math.round(performance.now() - started)
   const check: Check = { timestamp: new Date().toISOString(), latency, success: !error }
-  store.checks = [...store.checks, check].slice(-1440)
+  const windowStart = Date.parse(check.timestamp) - 24 * 60 * 60 * 1000
+  store.checks = [...store.checks, check]
+    .filter((item) => Date.parse(item.timestamp) >= windowStart)
+    .slice(-1440)
 
   const successfulChecks = store.checks.filter((item) => item.success).length
   const averageLatency = Math.round(store.checks.reduce((sum, item) => sum + item.latency, 0) / store.checks.length)

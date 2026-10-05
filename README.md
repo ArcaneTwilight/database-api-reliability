@@ -2,6 +2,26 @@
 
 The dashboard reads the `stocks` collection in Firestore and checks it every 1 minute, retaining up to 1,440 checks for a rolling 24-hour history. On dashboard load, it asks the server to compare the three mock stock records in `lib/stocks.ts` with Firestore and create or update only documents whose supplied fields differ. The Firestore document IDs are `HPQ`, `INTC`, and `IBM`.
 
+## Metrics API
+
+Use `GET /api/metrics` to retrieve the current uptime percentage and average latency over the rolling 24-hour monitoring window. The endpoint is read-only and allows cross-origin requests for use by other web apps:
+
+```json
+{
+  "uptime": 99.93,
+  "averageLatency": 691,
+  "unit": "ms",
+  "window": "24h",
+  "totalChecks": 1440,
+  "successfulChecks": 1439,
+  "failedChecks": 1,
+  "latestTimestamp": "2026-10-05T10:51:00.000Z",
+  "databaseStatus": "operational"
+}
+```
+
+The numbers above are an example; the endpoint calculates them from actual Firestore checks. `uptime` is the percentage of successful checks, and `averageLatency` is the mean check duration in milliseconds. The endpoint performs a check when requested, so it also works independently of the dashboard's one-minute polling. Checks are held in process memory and are reset when the server restarts or when requests reach a different server instance; for durable metrics across restarts or multiple instances, persist check records in a shared data store.
+
 Create/enable Firestore in the service account's Firebase project and set `FIREBASE_SERVICE_ACCOUNT_JSON` to the service-account JSON in the server's environment (for local development, copy `.env.example` to `.env.local` and set the value there; `.env.local` is git-ignored). In `.env.local`, quote the entire JSON value so dotenv treats it as one multiline value. Keep the private key's `\n` sequences escaped inside its JSON string:
 
 ```env
