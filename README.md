@@ -41,3 +41,12 @@ FIREBASE_SERVICE_ACCOUNT_JSON='{
 ```
 
 Replace the example values using the complete JSON downloaded from Firebase; do not leave required fields blank or include the `FIREBASE_SERVICE_ACCOUNT_JSON=` line inside the JSON. Grant the service account only the Firestore permissions it needs. The Firebase Admin SDK runs only on the server and bypasses Firestore Security Rules; never expose the service-account secret to the browser or commit it.
+
+## Deploy to Vercel
+
+1. Push this repository to GitHub. Keep `.env.local` and all real service-account credentials out of Git; `.env*` files are ignored except for the blank `.env.example` template.
+2. In Vercel, choose **Add New Project**, import the GitHub repository, and keep the detected Next.js framework and default build settings. Vercel uses `next build` to build the app.
+3. In the Vercel project's **Settings → Environment Variables**, add `FIREBASE_SERVICE_ACCOUNT_JSON` with the complete Firebase service-account JSON as its value. Add it for each environment you plan to use (Production, Preview, and/or Development). Do not prefix it with `NEXT_PUBLIC_`.
+4. Enable Firestore in the Firebase project and grant the service account the required Firestore access. Redeploy after adding or changing environment variables.
+
+The app can build without Firebase credentials, but Firestore-backed API requests return an error until `FIREBASE_SERVICE_ACCOUNT_JSON` is configured. The monitoring history is held in process memory, so it is not shared between Vercel instances and is reset when an instance restarts. Run `npm run typecheck` locally to check TypeScript before pushing.
